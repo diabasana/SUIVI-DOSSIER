@@ -7,9 +7,9 @@ st.set_page_config(page_title="Mon Suivi Dossier", layout="centered")
 # Chargement des données Excel
 @st.cache_data
 def charger_donnees():
-   # header=3 permet de sauter les lignes vides pour démarrer exactement à la ligne 4 de ton Excel
-   df_data = pd.read_excel("suivi-dosiers.xlsx", sheet_name="Donnees", header=3)
-   df_users = pd.read_excel("suivi-dosiers.xlsx", sheet_name="Utilisateurs", header=3)
+   # Lecture standard à la ligne 1
+   df_data = pd.read_excel("suivi-dosiers.xlsx", sheet_name="Donnees")
+   df_users = pd.read_excel("suivi-dosiers.xlsx", sheet_name="Utilisateurs")
    return df_data, df_users
 
 try:
@@ -33,11 +33,9 @@ if not st.session_state["connecte"]:
        bouton_connexion = st.form_submit_button("Se connecter")
 
        if bouton_connexion:
-           # Nettoyage des espaces pour éviter les erreurs de frappe
            df_users['IDENTIFIANT'] = df_users['IDENTIFIANT'].astype(str).str.strip()
            df_users['MOT_DE_PASS'] = df_users['MOT_DE_PASS'].astype(str).str.strip()
 
-           # Vérification stricte des identifiants et mots de passe (en MAJUSCULES comme sur ta photo)
            user_row = df_users[(df_users['IDENTIFIANT'] == identifiant.strip()) & (df_users['MOT_DE_PASS'] == mot_de_passe.strip())]
 
            if not user_row.empty:
@@ -48,7 +46,7 @@ if not st.session_state["connecte"]:
            else:
                st.error("Identifiant ou mot de passe incorrect.")
 
-# --- ÉCRAN CLIENT (Une fois connecté) ---
+# --- ÉCRAN CLIENT ---
 else:
    st.success(f"Bienvenue {st.session_state['nom']} 👋")
 
@@ -58,7 +56,6 @@ else:
 
    st.write("---")
 
-   # Filtrer les données : l'utilisateur ne voit QUE ses lignes
    df_data['IDENTIFIANT'] = df_data['IDENTIFIANT'].astype(str).str.strip()
    user_data = df_data[df_data['IDENTIFIANT'] == st.session_state["user"]]
 
@@ -66,6 +63,4 @@ else:
        st.warning("Aucune donnée disponible pour votre profil pour le moment.")
    else:
        st.subheader("📋 L'état de votre dossier")
-
-       # Affichage du tableau complet de l'utilisateur (on cache juste la colonne IDENTIFIANT pour le design)
        st.dataframe(user_data.drop(columns=['IDENTIFIANT']), use_container_width=True)
