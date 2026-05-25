@@ -1,13 +1,11 @@
 import streamlit as st
 import pandas as pd
 
-# Configuration pour écran mobile
 st.set_page_config(page_title="Mon Suivi Dossier", layout="centered")
 
-# Chargement des données Excel
 @st.cache_data
 def charger_donnees():
-   # Lecture standard à la ligne 1
+   # On force ici le nom exact avec un seul 's' à dosiers
    df_data = pd.read_excel("suivi-dosiers.xlsx", sheet_name="Donnees")
    df_users = pd.read_excel("suivi-dosiers.xlsx", sheet_name="Utilisateurs")
    return df_data, df_users
@@ -15,7 +13,8 @@ def charger_donnees():
 try:
    df_data, df_users = charger_donnees()
 except Exception as e:
-   st.error("Erreur de lecture du fichier Excel. Vérifiez les colonnes.")
+   # Ce message va nous afficher la VRAIE raison du bug (ex: "Worksheet Utilisateurs not found")
+   st.error(f"Erreur technique de lecture : {e}")
    st.stop()
 
 # --- ÉCRAN DE CONNEXION ---
@@ -45,20 +44,14 @@ if not st.session_state["connecte"]:
                st.rerun()
            else:
                st.error("Identifiant ou mot de passe incorrect.")
-
-# --- ÉCRAN CLIENT ---
 else:
    st.success(f"Bienvenue {st.session_state['nom']} 👋")
-
    if st.button("Se déconnecter"):
        st.session_state["connecte"] = False
        st.rerun()
-
    st.write("---")
-
    df_data['IDENTIFIANT'] = df_data['IDENTIFIANT'].astype(str).str.strip()
    user_data = df_data[df_data['IDENTIFIANT'] == st.session_state["user"]]
-
    if user_data.empty:
        st.warning("Aucune donnée disponible pour votre profil pour le moment.")
    else:
