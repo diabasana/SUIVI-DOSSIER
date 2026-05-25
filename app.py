@@ -8,8 +8,8 @@ st.set_page_config(page_title="Mon Suivi Dossier", layout="centered")
 @st.cache_data
 def charger_donnees():
    # Lit le fichier avec les nouveaux noms d'onglets propres
-   df_data = pd.read_excel("suivi-dosier.xlsx", sheet_name="Donnees")
-   df_users = pd.read_excel("suivi-dosier.xlsx", sheet_name="Utilisateurs")
+   df_data = pd.read_excel("suivi-dosiers.xlsx", sheet_name="Donnees")
+   df_users = pd.read_excel("suivi-dosiers.xlsx", sheet_name="Utilisateurs")
    return df_data, df_users
 
 try:
