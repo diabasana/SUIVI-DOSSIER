@@ -3,7 +3,7 @@ import pandas as pd
 
 st.set_page_config(page_title="Mon Suivi Dossier", layout="centered")
 
-# Chargement direct sans bloc de fonction pour éviter les erreurs d'indentation
+# Chargement direct du fichier Excel
 try:
     df_data = pd.read_excel("suivi-dosiers.xlsx", sheet_name="Donnees")
     df_users = pd.read_excel("suivi-dosiers.xlsx", sheet_name="Utilisateurs")
@@ -11,6 +11,13 @@ try:
     # Nettoyage des colonnes
     df_data.columns = df_data.columns.astype(str).str.strip().str.upper()
     df_users.columns = df_users.columns.astype(str).str.strip().str.upper()
+    
+    # --- NETTOYAGE DES DATES (Suppression des heures 00:00:00) ---
+    for col in df_data.columns:
+        if "DATE" in col:
+            # On convertit en format date brute (sans l'heure) en ignorant les textes (comme "MARS", "FEVRIER")
+            df_data[col] = pd.to_datetime(df_data[col], errors='coerce').dt.strftime('%Y-%m-%d').fillna(df_data[col])
+            
 except Exception as e:
     st.error(f"Erreur technique de lecture du fichier Excel : {e}")
     st.stop()
