@@ -1,7 +1,24 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Mon Suivi Dossier", layout="centered")
+st.set_page_config(page_title="Mon Suivi Dossier", layout="wide") # Passage en mode large pour mieux voir les colonnes
+
+# Fonction pour appliquer des couleurs différentes aux colonnes
+def colorer_colonnes(df):
+    styles = pd.DataFrame('', index=df.index, columns=df.columns)
+    
+    # On applique des couleurs de fond soft (pastels) par bloc de colonnes si elles existent
+    for col in df.columns:
+        if 'IDENTIFIANT' in col:
+            styles[col] = 'background-color: #f1f3f5; color: #212529;' # Gris clair
+        elif col in ['NOM', 'PRENOM']:
+            styles[col] = 'background-color: #e7f5ff; color: #004085;' # Bleu pastel
+        elif 'DATE' in col:
+            styles[col] = 'background-color: #ebfbee; color: #0f5132;' # Vert pastel
+        else:
+            styles[col] = 'background-color: #fff9db; color: #664d03;' # Jaune/Orange pastel
+            
+    return styles
 
 # Chargement direct du fichier Excel
 try:
@@ -12,10 +29,9 @@ try:
     df_data.columns = df_data.columns.astype(str).str.strip().str.upper()
     df_users.columns = df_users.columns.astype(str).str.strip().str.upper()
     
-    # --- NETTOYAGE DES DATES (Suppression des heures 00:00:00) ---
+    # Nettoyage des dates (Suppression des heures 00:00:00)
     for col in df_data.columns:
         if "DATE" in col:
-            # On convertit en format date brute (sans l'heure) en ignorant les textes (comme "MARS", "FEVRIER")
             df_data[col] = pd.to_datetime(df_data[col], errors='coerce').dt.strftime('%Y-%m-%d').fillna(df_data[col])
             
 except Exception as e:
@@ -73,10 +89,13 @@ else:
             choix_filtre = st.selectbox("Filtrer la vue sur un utilisateur spécifique :", liste_utilisateurs)
             
             if choix_filtre == "TOUS LES CLIENTS":
-                st.dataframe(df_data, use_container_width=True)
+                df_a_afficher = df_data
             else:
-                donnees_filtrees = df_data[df_data[col_client] == choix_filtre]
-                st.dataframe(donnees_filtrees, use_container_width=True)
+                df_a_afficher = df_data[df_data[col_client] == choix_filtre]
+            
+            # Application du style de couleur
+            df_style = df_a_afficher.style.apply(colorer_colonnes, axis=None)
+            st.dataframe(df_style, use_container_width=True)
                 
         # --- VUE CLIENT NORMAL ---
         else:
@@ -86,4 +105,8 @@ else:
                 st.warning("Aucune donnée disponible pour votre profil pour le moment.")
             else:
                 st.subheader("📋 L'état de votre dossier")
-                st.dataframe(user_data.drop(columns=[col_client]), use_container_width=True)
+                # On enlève la colonne identifiant pour le client
+                df_client = user_data.drop(columns=[col_client])
+                # Application du style de couleur
+                df_style = df_client.style.apply(colorer_colonnes, axis=None)
+                st.dataframe(df_style, use_container_width=True)
