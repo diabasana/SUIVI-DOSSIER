@@ -50,10 +50,8 @@ st.error("Désolé, la colonne avec l'Identifiant est introuvable dans l'onglet 
 else:
 df_data[col_client] = df_data[col_client].astype(str).str.strip()
 # --- MODE MASTER / ADMIN ---
-# Si l'utilisateur connecté est "master", il voit TOUT
 if st.session_state["user"].lower() == "master":
 st.subheader("📊 Tableau de bord Master (Vue Globale)")
-# Optionnel : Un petit menu pour filtrer par client si tu veux analyser un profil précis
 liste_utilisateurs = ["TOUS LES CLIENTS"] + sorted(list(df_data[col_client].unique()))
 choix_filtre = st.selectbox("Filtrer la vue sur un utilisateur spécifique :", liste_utilisateurs)
 if choix_filtre == "TOUS LES CLIENTS":
@@ -62,7 +60,6 @@ else:
 donnees_filtrees = df_data[df_data[col_client] == choix_filtre]
 st.dataframe(donnees_filtrees, use_container_width=True)
 # --- MODE CLIENT NORMAL ---
-# Si c'est un client classique, il ne voit que ses lignes
 else:
 user_data = df_data[df_data[col_client] == st.session_state["user"]]
 if user_data.empty:
